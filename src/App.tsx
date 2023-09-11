@@ -1,38 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import TodoList from './components/TodoList';
 import NewTodo from './components/NewTodo';
+import MoviesList from './components/MoviesList';
 import { Todo } from './todo.model';
-import { createServer } from 'miragejs';
-import data from './data.json';
-
-createServer({
-  routes() {
-    this.get('api/users', () => {
-      return data;
-    });
-  },
-});
-
-/* flytta till egen fil */
-
-type User = {
-  id: number;
-  name: string;
-};
-/* flytta till egen fil */
+import { Movie } from './movie.model';
+import NewMovie from './components/NewMovie';
 
 const App: React.FC = () => {
-  /* flytta till egen fil */
-  const [users, setUsers] = useState<User[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
 
   useEffect(() => {
-    fetch('api/users')
-      .then((res) => res.json())
-      .then((users) => setUsers(users));
+    fetch('/api/movies')
+      .then((resp) => resp.json())
+      .then((json) => setMovies(json.movies))
+      .catch((err) => console.log(err));
   }, []);
-  /* flytta till egen fil */
 
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const movieAddHandler = (name: string, year: number) => {
+    setMovies((prevMovies) => [
+      ...prevMovies,
+      { id: Math.floor(Math.random() * 100), name: name, year: year },
+    ]);
+  };
 
   const todoAddHandler = (text: string) => {
     setTodos((prevTodos) => [
@@ -47,13 +37,10 @@ const App: React.FC = () => {
     });
   };
 
-  <div></div>;
-
   return (
     <div className='App'>
-      {users.map((user) => (
-        <div key={user.id}>{user.name}</div>
-      ))}
+      <MoviesList items={movies}></MoviesList>
+      <NewMovie onAddMovie={movieAddHandler}></NewMovie>
       <NewTodo onAddTodo={todoAddHandler} />
       <TodoList items={todos} onDeleteTodo={todoDeleteHandler} />
     </div>
